@@ -31,3 +31,18 @@ resource "aws_eip" "ngw" {
   tags = { Name =  "${var.env}-eip-${count.index+1}" }
 
 }
+
+resource "aws_nat_gateway" "ngw" {
+  count         = length(local.public_subnet_ids)
+
+  allocation_id = element(aws_eip.ngw.*.id,count.index )
+  subnet_id     = element(local.public_subnet_ids,count.index )
+  tags          = { Name = "${var.env}-ngw-${count.index+1}" }
+}
+
+resource "aws_route" "ngw-route" {
+  count                  = length(local.private_route_table_ids)
+  route_table_id         = element(local.private_route_table_ids,count.index )
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = element(aws_nat_gateway.ngw.*.id,count.index )
+}
