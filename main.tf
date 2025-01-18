@@ -24,3 +24,10 @@ resource "aws_route" "igw_route" {
   destination_cidr_block    = "0.0.0.0/0"
   gateway_id                = aws_internet_gateway.igw.id
 }
+
+resource "aws_eip" "ngw" {
+  count = length(local.public_subnet_ids)
+  domain                    = "vpc"
+  tags = { Name =  "${var.env}-eip-${count.index+1}" }
+
+}
